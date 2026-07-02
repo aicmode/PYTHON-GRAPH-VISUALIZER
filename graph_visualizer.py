@@ -4,6 +4,11 @@ from collections import defaultdict
 
 # 日本語フォント設定（Mac向け）
 plt.rcParams["font.family"] = "Hiragino Sans"
+plt.rcParams["axes.facecolor"] = "white"
+plt.rcParams["figure.facecolor"] = "white"
+plt.rcParams["font.size"] = 11
+plt.rcParams["axes.titlesize"] = 16
+plt.rcParams["axes.labelsize"] = 12
 
 names = []
 departments = []
@@ -38,37 +43,104 @@ for department in department_score_totals:
         department_score_totals[department] / department_score_counts[department]
     )
 
+colors = ["#4E79A7", "#F28E2B", "#59A14F", "#E15759", "#76B7B2", "#EDC948"]
+
 # 1つ目：円グラフ
-plt.figure()
-plt.pie(
+fig, ax = plt.subplots(figsize=(7, 6), facecolor="white")
+wedges, texts, autotexts = ax.pie(
     department_counts.values(),
     labels=department_counts.keys(),
-    autopct="%1.1f%%"
+    autopct="%1.1f%%",
+    pctdistance=0.79,
+    startangle=90,
+    counterclock=False,
+    colors=colors[:len(department_counts)],
+    wedgeprops={"width": 0.42, "edgecolor": "white", "linewidth": 2},
+    textprops={"fontsize": 11, "color": "#333333"}
 )
-plt.title("所属ごとの参加者割合")
-plt.savefig("department_pie_chart.png")
+for autotext in autotexts:
+    autotext.set_fontsize(11)
+    autotext.set_weight("bold")
+    autotext.set_color("white")
+ax.text(
+    0,
+    0,
+    f"参加者\n{len(scores)}名",
+    ha="center",
+    va="center",
+    fontsize=18,
+    fontweight="bold",
+    color="#333333"
+)
+ax.set_title("所属ごとの参加者割合", pad=18, fontweight="bold")
+ax.axis("equal")
+for spine in ["top", "right"]:
+    ax.spines[spine].set_visible(False)
+plt.savefig("department_pie_chart.png", dpi=150, bbox_inches="tight")
 plt.close()
 
 # 2つ目：棒グラフ
-plt.figure()
-plt.bar(
+fig, ax = plt.subplots(figsize=(8, 5), facecolor="white")
+bars = ax.bar(
     department_average_scores.keys(),
-    department_average_scores.values()
+    department_average_scores.values(),
+    color=colors[:len(department_average_scores)],
+    edgecolor="white",
+    linewidth=1.5
 )
-plt.title("所属ごとの平均スコア")
-plt.xlabel("所属")
-plt.ylabel("平均スコア")
-plt.ylim(0, 100)
-plt.savefig("department_average_bar_chart.png")
+ax.set_title("所属ごとの平均スコア", pad=16, fontweight="bold")
+ax.set_xlabel("所属", labelpad=10)
+ax.set_ylabel("平均スコア", labelpad=10)
+ax.set_ylim(0, 100)
+ax.grid(axis="y", color="#DDDDDD", linewidth=0.8, alpha=0.7)
+ax.set_axisbelow(True)
+ax.tick_params(axis="x", labelsize=11)
+ax.tick_params(axis="y", labelsize=10)
+for bar in bars:
+    height = bar.get_height()
+    ax.text(
+        bar.get_x() + bar.get_width() / 2,
+        height + 1.5,
+        f"{height:.1f}",
+        ha="center",
+        va="bottom",
+        fontsize=11,
+        fontweight="bold",
+        color="#333333"
+    )
+for spine in ["top", "right"]:
+    ax.spines[spine].set_visible(False)
+plt.savefig("department_average_bar_chart.png", dpi=150, bbox_inches="tight")
 plt.close()
 
 # 3つ目：ヒストグラム
-plt.figure()
-plt.hist(scores, bins=10)
-plt.title("スコア分布")
-plt.xlabel("スコア")
-plt.ylabel("人数")
-plt.savefig("score_histogram.png")
+fig, ax = plt.subplots(figsize=(8, 5), facecolor="white")
+ax.hist(
+    scores,
+    bins=10,
+    color="#4E79A7",
+    edgecolor="white",
+    linewidth=1.5
+)
+average_score = sum(scores) / len(scores)
+ax.axvline(
+    average_score,
+    color="#E15759",
+    linestyle="--",
+    linewidth=2,
+    label=f"平均：{average_score:.1f}点"
+)
+ax.set_title("スコア分布", pad=16, fontweight="bold")
+ax.set_xlabel("スコア", labelpad=10)
+ax.set_ylabel("人数", labelpad=10)
+ax.grid(axis="y", color="#DDDDDD", linewidth=0.8, alpha=0.7)
+ax.set_axisbelow(True)
+ax.tick_params(axis="x", labelsize=10)
+ax.tick_params(axis="y", labelsize=10)
+ax.legend(frameon=False, fontsize=11)
+for spine in ["top", "right"]:
+    ax.spines[spine].set_visible(False)
+plt.savefig("score_histogram.png", dpi=150, bbox_inches="tight")
 plt.close()
 
 print("=== グラフ作成完了 ===")
